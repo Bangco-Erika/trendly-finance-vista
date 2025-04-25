@@ -14,12 +14,13 @@ export const stockPriceData = [
   { name: 'Dec', price: 600 },
 ];
 
+// Make sure status is explicitly "up" or "down" as literal types
 export const marketOverviewData = [
-  { name: 'S&P 500', value: 4732.25, change: 1.6, status: 'up' },
-  { name: 'DOW', value: 38992.13, change: 0.5, status: 'up' },
-  { name: 'NASDAQ', value: 16752.48, change: 2.1, status: 'up' },
-  { name: 'RUSSELL', value: 2045.12, change: -0.3, status: 'down' },
-  { name: 'VIX', value: 13.6, change: -4.2, status: 'down' },
+  { name: 'S&P 500', value: 4732.25, change: 1.6, status: 'up' as const },
+  { name: 'DOW', value: 38992.13, change: 0.5, status: 'up' as const },
+  { name: 'NASDAQ', value: 16752.48, change: 2.1, status: 'up' as const },
+  { name: 'RUSSELL', value: 2045.12, change: -0.3, status: 'down' as const },
+  { name: 'VIX', value: 13.6, change: -4.2, status: 'down' as const },
 ];
 
 export const portfolioData = [
@@ -30,11 +31,12 @@ export const portfolioData = [
   { name: 'Consumer', value: 10 },
 ];
 
+// Make sure type is explicitly "buy" or "sell" as literal types
 export const recentTransactions = [
   {
     id: '1',
     symbol: 'AAPL',
-    type: 'buy',
+    type: 'buy' as const,
     price: 182.52,
     shares: 10,
     date: '2025-04-22',
@@ -42,7 +44,7 @@ export const recentTransactions = [
   {
     id: '2',
     symbol: 'MSFT',
-    type: 'buy',
+    type: 'buy' as const,
     price: 425.21,
     shares: 5,
     date: '2025-04-20',
@@ -50,7 +52,7 @@ export const recentTransactions = [
   {
     id: '3',
     symbol: 'NVDA',
-    type: 'sell',
+    type: 'sell' as const,
     price: 878.35,
     shares: 3,
     date: '2025-04-18',
@@ -58,13 +60,14 @@ export const recentTransactions = [
   {
     id: '4',
     symbol: 'GOOGL',
-    type: 'buy',
+    type: 'buy' as const,
     price: 178.05,
     shares: 8,
     date: '2025-04-15',
   },
 ];
 
+// Make sure status is explicitly "up" or "down" as literal types
 export const watchlistItems = [
   {
     symbol: 'AAPL',
@@ -72,7 +75,7 @@ export const watchlistItems = [
     price: 182.52,
     change: 1.23,
     changePercent: 0.68,
-    status: 'up',
+    status: 'up' as const,
   },
   {
     symbol: 'MSFT',
@@ -80,7 +83,7 @@ export const watchlistItems = [
     price: 425.21,
     change: 2.89,
     changePercent: 0.68,
-    status: 'up',
+    status: 'up' as const,
   },
   {
     symbol: 'GOOGL',
@@ -88,7 +91,7 @@ export const watchlistItems = [
     price: 178.05,
     change: -0.45,
     changePercent: -0.25,
-    status: 'down',
+    status: 'down' as const,
   },
   {
     symbol: 'AMZN',
@@ -96,7 +99,7 @@ export const watchlistItems = [
     price: 183.32,
     change: 1.56,
     changePercent: 0.86,
-    status: 'up',
+    status: 'up' as const,
   },
   {
     symbol: 'META',
@@ -104,6 +107,6 @@ export const watchlistItems = [
     price: 513.20,
     change: 4.23,
     changePercent: 0.83,
-    status: 'up',
+    status: 'up' as const,
   },
 ];

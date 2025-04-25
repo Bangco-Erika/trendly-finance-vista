@@ -21,7 +21,7 @@ const Dashboard = () => {
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-gray-100">
-        <Sidebar defaultCollapsed={false} className="border-r bg-white">
+        <Sidebar className="border-r bg-white">
           <SidebarContent className="p-2">
             <div className="px-3 py-2">
               <h2 className="text-lg font-semibold mb-2 text-finance-primary">TrendlyFinance</h2>
