@@ -14,8 +14,16 @@ import {
   watchlistItems 
 } from '@/utils/mockData';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarTrigger } from '@/components/ui/sidebar';
-import { Home, BarChart, Search, Settings } from 'lucide-react';
+import { Home, BarChart, Search, Settings, PhilippinePeso } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+// Exchange rate from USD to PHP (example rate)
+const USD_TO_PHP = 56.5;
+
+// Convert USD values to PHP
+const convertToPHP = (usdValue: number) => {
+  return usdValue * USD_TO_PHP;
+};
 
 const Dashboard = () => {
   return (
@@ -85,7 +93,7 @@ const Dashboard = () => {
               <div className="bg-white p-6 rounded-lg shadow-sm border flex justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Portfolio Value</p>
-                  <h3 className="text-2xl font-bold">$124,532.63</h3>
+                  <h3 className="text-2xl font-bold">₱{convertToPHP(124532.63).toLocaleString(undefined, {maximumFractionDigits: 2})}</h3>
                   <p className="text-finance-profit flex items-center">
                     <TrendingUp className="w-4 h-4 mr-1" /> +2.3% today
                   </p>
@@ -98,7 +106,7 @@ const Dashboard = () => {
               <div className="bg-white p-6 rounded-lg shadow-sm border flex justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Total Gain/Loss</p>
-                  <h3 className="text-2xl font-bold">+$12,408.29</h3>
+                  <h3 className="text-2xl font-bold">+₱{convertToPHP(12408.29).toLocaleString(undefined, {maximumFractionDigits: 2})}</h3>
                   <p className="text-finance-profit flex items-center">
                     <TrendingUp className="w-4 h-4 mr-1" /> +11.1% all time
                   </p>
@@ -111,21 +119,32 @@ const Dashboard = () => {
               <div className="bg-white p-6 rounded-lg shadow-sm border flex justify-between">
                 <div>
                   <p className="text-sm text-gray-500">Cash Balance</p>
-                  <h3 className="text-2xl font-bold">$8,245.12</h3>
+                  <h3 className="text-2xl font-bold">₱{convertToPHP(8245.12).toLocaleString(undefined, {maximumFractionDigits: 2})}</h3>
                   <p className="text-gray-500">Available to invest</p>
                 </div>
                 <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center">
-                  <DollarSign className="h-8 w-8 text-finance-neutral" />
+                  <PhilippinePeso className="h-8 w-8 text-finance-neutral" />
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               <div className="lg:col-span-2">
-                <StockChart data={stockPriceData} title="Market Performance" />
+                <StockChart 
+                  data={stockPriceData.map(item => ({ 
+                    name: item.name, 
+                    price: convertToPHP(item.price)
+                  }))} 
+                  title="Market Performance (₱)" 
+                />
               </div>
               <div>
-                <MarketOverview data={marketOverviewData} />
+                <MarketOverview 
+                  data={marketOverviewData.map(item => ({
+                    ...item,
+                    value: convertToPHP(item.value)
+                  }))} 
+                />
               </div>
             </div>
 
@@ -134,12 +153,23 @@ const Dashboard = () => {
                 <PortfolioAllocation data={portfolioData} />
               </div>
               <div>
-                <Watchlist items={watchlistItems} />
+                <Watchlist 
+                  items={watchlistItems.map(item => ({
+                    ...item,
+                    price: convertToPHP(item.price),
+                    change: convertToPHP(item.change)
+                  }))} 
+                />
               </div>
             </div>
 
             <div>
-              <RecentTransactions transactions={recentTransactions} />
+              <RecentTransactions 
+                transactions={recentTransactions.map(transaction => ({
+                  ...transaction,
+                  price: convertToPHP(transaction.price)
+                }))} 
+              />
             </div>
           </main>
         </div>
