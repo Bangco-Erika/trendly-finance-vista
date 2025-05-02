@@ -30,7 +30,7 @@ const Watchlist = ({ items }: WatchlistProps) => {
                 <div className="text-sm text-gray-500">{item.name}</div>
               </div>
               <div className="text-right">
-                <div className="font-semibold">${item.price.toFixed(2)}</div>
+                <div className="font-semibold">₱{item.price.toLocaleString(undefined, {maximumFractionDigits: 2})}</div>
                 <div 
                   className={`flex items-center justify-end ${
                     item.status === 'up' ? 'text-finance-profit' : 'text-finance-loss'
@@ -38,7 +38,7 @@ const Watchlist = ({ items }: WatchlistProps) => {
                 >
                   {item.status === 'up' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                   <span className="ml-1">
-                    {item.change > 0 ? '+' : ''}{item.change.toFixed(2)} ({item.changePercent.toFixed(2)}%)
+                    {item.change > 0 ? '+' : ''}₱{item.change.toLocaleString(undefined, {maximumFractionDigits: 2})} ({item.changePercent.toFixed(2)}%)
                   </span>
                 </div>
               </div>

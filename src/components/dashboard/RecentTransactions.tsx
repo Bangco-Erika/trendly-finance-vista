@@ -39,7 +39,7 @@ const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
                   <td className={`py-3 ${transaction.type === 'buy' ? 'text-finance-profit' : 'text-finance-loss'}`}>
                     {transaction.type.toUpperCase()}
                   </td>
-                  <td className="py-3">${transaction.price.toFixed(2)}</td>
+                  <td className="py-3">₱{transaction.price.toLocaleString(undefined, {maximumFractionDigits: 2})}</td>
                   <td className="py-3">{transaction.shares}</td>
                   <td className="py-3">{transaction.date}</td>
                 </tr>
