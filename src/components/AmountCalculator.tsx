@@ -10,6 +10,8 @@ import { toast } from "@/components/ui/sonner";
 
 // Exchange rate (approx 1 USD = 56 PHP as of 2025)
 const EXCHANGE_RATE = 56;
+// Maximum amount allowed (5 million USD)
+const MAX_AMOUNT = 5000000;
 
 const AmountCalculator = () => {
   const [amount, setAmount] = useState<string>("");
@@ -30,10 +32,18 @@ const AmountCalculator = () => {
   }, [amount]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(e.target.value);
+    const value = e.target.value;
+    const numAmount = parseFloat(value);
+    
+    // Check if the amount exceeds the maximum limit
+    if (numAmount > MAX_AMOUNT) {
+      toast.error(`Amount cannot exceed ${MAX_AMOUNT.toLocaleString()} USD`);
+      return;
+    }
+    
+    setAmount(value);
     
     // Show toast if the input is valid
-    const numAmount = parseFloat(e.target.value);
     if (!isNaN(numAmount) && numAmount > 0) {
       toast.success("Amount updated in real-time");
     }
@@ -61,7 +71,7 @@ const AmountCalculator = () => {
       <CardContent>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">Enter Amount (USD)</Label>
+            <Label htmlFor="amount">Enter Amount (USD) - Max 5M</Label>
             <Input
               id="amount"
               type="number"
@@ -69,6 +79,7 @@ const AmountCalculator = () => {
               value={amount}
               onChange={handleInputChange}
               className="text-right"
+              max={MAX_AMOUNT}
             />
           </div>
           
