@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,21 +16,27 @@ const AmountCalculator = () => {
   const [calculatedAmount, setCalculatedAmount] = useState<number | null>(null);
   const navigate = useNavigate();
   
-  const handleCalculate = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  // Calculate PHP amount whenever the input changes
+  useEffect(() => {
     const numAmount = parseFloat(amount);
     
-    if (isNaN(numAmount)) {
-      toast.error("Please enter a valid amount");
-      return;
+    if (!isNaN(numAmount) && numAmount > 0) {
+      // Convert USD to PHP
+      const phpAmount = numAmount * EXCHANGE_RATE;
+      setCalculatedAmount(phpAmount);
+    } else {
+      setCalculatedAmount(null);
     }
+  }, [amount]);
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAmount(e.target.value);
     
-    // Simple calculation: Convert USD to PHP
-    const phpAmount = numAmount * EXCHANGE_RATE;
-    setCalculatedAmount(phpAmount);
-    
-    toast.success("Amount successfully calculated");
+    // Show toast if the input is valid
+    const numAmount = parseFloat(e.target.value);
+    if (!isNaN(numAmount) && numAmount > 0) {
+      toast.success("Amount updated in real-time");
+    }
   };
   
   const handleGoToTrends = () => {
@@ -49,7 +55,7 @@ const AmountCalculator = () => {
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleCalculate} className="space-y-4">
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="amount">Enter Amount (USD)</Label>
             <Input
@@ -57,12 +63,10 @@ const AmountCalculator = () => {
               type="number"
               placeholder="0.00"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={handleInputChange}
               className="text-right"
             />
           </div>
-          
-          <Button type="submit" className="w-full">Calculate PHP Amount</Button>
           
           {calculatedAmount !== null && (
             <div className="mt-6 space-y-4">
@@ -72,7 +76,6 @@ const AmountCalculator = () => {
               </div>
               
               <Button 
-                type="button" 
                 onClick={handleGoToTrends} 
                 variant="outline" 
                 className="w-full flex items-center justify-center gap-2"
@@ -82,7 +85,7 @@ const AmountCalculator = () => {
               </Button>
             </div>
           )}
-        </form>
+        </div>
       </CardContent>
     </Card>
   );
