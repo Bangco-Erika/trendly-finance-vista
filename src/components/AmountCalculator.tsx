@@ -40,8 +40,12 @@ const AmountCalculator = () => {
   };
   
   const handleGoToTrends = () => {
-    // Navigate to trend analysis page
-    navigate("/dashboard/trends");
+    if (calculatedAmount !== null) {
+      // Navigate to trend analysis page with the amount
+      navigate(`/dashboard/trends?amount=${calculatedAmount}`);
+    } else {
+      toast.error("Please enter a valid amount first");
+    }
   };
   
   return (

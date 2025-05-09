@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { 
   BarChart, 
   TrendingUp, 
@@ -17,59 +18,65 @@ import { Bar, BarChart as RechartsBarChart, Line, LineChart, ResponsiveContainer
 // Exchange rate (approx 1 USD = 56 PHP as of 2025)
 const EXCHANGE_RATE = 56;
 
-// Convert USD data to PHP
-const convertToPHP = (data, priceKey = 'value') => {
-  return data.map(item => ({
-    ...item,
-    [priceKey]: typeof item[priceKey] === 'number' ? Math.round(item[priceKey] * EXCHANGE_RATE) : item[priceKey]
-  }));
+// Function to generate trend data based on input amount
+const generateTrendData = (baseAmount: number) => {
+  // Create factor to adjust the data based on input amount
+  const factor = baseAmount / 10000;  // Normalize for reasonable scaling
+  
+  return {
+    "1W": [
+      { date: "Mon", value: baseAmount * 0.88 },
+      { date: "Tue", value: baseAmount * 0.91 },
+      { date: "Wed", value: baseAmount * 0.97 },
+      { date: "Thu", value: baseAmount * 0.96 },
+      { date: "Fri", value: baseAmount }
+    ],
+    "1M": [
+      { date: "Week 1", value: baseAmount * 0.88 },
+      { date: "Week 2", value: baseAmount * 0.92 },
+      { date: "Week 3", value: baseAmount * 0.95 },
+      { date: "Week 4", value: baseAmount }
+    ],
+    "3M": [
+      { date: "Jan", value: baseAmount * 0.81 },
+      { date: "Feb", value: baseAmount * 0.88 },
+      { date: "Mar", value: baseAmount }
+    ],
+    "1Y": stockPriceData.map(item => ({
+      ...item,
+      price: item.price * factor
+    })),
+    "ALL": [
+      { date: "2020", value: baseAmount * 0.54 },
+      { date: "2021", value: baseAmount * 0.69 },
+      { date: "2022", value: baseAmount * 0.80 },
+      { date: "2023", value: baseAmount * 0.88 },
+      { date: "2024", value: baseAmount }
+    ]
+  };
 };
 
-// Trend data for different time periods in PHP
-const trendData = {
-  "1W": convertToPHP([
-    { date: "Mon", value: 520 },
-    { date: "Tue", value: 535 },
-    { date: "Wed", value: 570 },
-    { date: "Thu", value: 565 },
-    { date: "Fri", value: 590 }
-  ]),
-  "1M": convertToPHP([
-    { date: "Week 1", value: 520 },
-    { date: "Week 2", value: 540 },
-    { date: "Week 3", value: 560 },
-    { date: "Week 4", value: 590 }
-  ]),
-  "3M": convertToPHP([
-    { date: "Jan", value: 480 },
-    { date: "Feb", value: 520 },
-    { date: "Mar", value: 590 }
-  ]),
-  "1Y": convertToPHP(stockPriceData, 'price'),
-  "ALL": convertToPHP([
-    { date: "2020", value: 320 },
-    { date: "2021", value: 410 },
-    { date: "2022", value: 470 },
-    { date: "2023", value: 520 },
-    { date: "2024", value: 590 }
-  ])
+// Generate volume data based on input amount
+const generateVolumeData = (baseAmount: number) => {
+  const volumeFactor = baseAmount / 100;
+  return [
+    { date: "Jan", volume: 1200 * volumeFactor },
+    { date: "Feb", volume: 1500 * volumeFactor },
+    { date: "Mar", volume: 1100 * volumeFactor },
+    { date: "Apr", volume: 1400 * volumeFactor },
+    { date: "May", volume: 1700 * volumeFactor },
+    { date: "Jun", volume: 1300 * volumeFactor },
+    { date: "Jul", volume: 900 * volumeFactor },
+    { date: "Aug", volume: 1100 * volumeFactor },
+    { date: "Sep", volume: 1350 * volumeFactor },
+    { date: "Oct", volume: 1550 * volumeFactor },
+    { date: "Nov", volume: 1750 * volumeFactor },
+    { date: "Dec", volume: 1400 * volumeFactor }
+  ];
 };
 
-// Volume data in PHP
-const volumeData = convertToPHP([
-  { date: "Jan", volume: 1200 },
-  { date: "Feb", volume: 1500 },
-  { date: "Mar", volume: 1100 },
-  { date: "Apr", volume: 1400 },
-  { date: "May", volume: 1700 },
-  { date: "Jun", volume: 1300 },
-  { date: "Jul", volume: 900 },
-  { date: "Aug", volume: 1100 },
-  { date: "Sep", volume: 1350 },
-  { date: "Oct", volume: 1550 },
-  { date: "Nov", volume: 1750 },
-  { date: "Dec", volume: 1400 }
-], 'volume');
+// Default sentinel value if no amount is provided
+const DEFAULT_AMOUNT = 590 * EXCHANGE_RATE;
 
 // Market sentiment data (percentages unchanged)
 const sentimentData = [
@@ -78,16 +85,7 @@ const sentimentData = [
   { name: "Bearish", value: 15 }
 ];
 
-// Key statistics in PHP
-const keyStats = [
-  { name: "Market Cap", value: `₱${(1.2 * EXCHANGE_RATE).toFixed(1)}T` },
-  { name: "P/E Ratio", value: 22.5 },
-  { name: "Dividend Yield", value: "1.8%" },
-  { name: "52-Week High", value: `₱${Math.round(612.45 * EXCHANGE_RATE).toLocaleString()}` },
-  { name: "52-Week Low", value: `₱${Math.round(482.10 * EXCHANGE_RATE).toLocaleString()}` },
-  { name: "Beta", value: 1.12 }
-];
-
+// Chart configuration
 const chartConfig = {
   positive: { color: "#22c55e" },
   negative: { color: "#ef4444" },
@@ -98,32 +96,71 @@ const chartConfig = {
 const TrendAnalysis = () => {
   const [timeframe, setTimeframe] = useState<"1W" | "1M" | "3M" | "1Y" | "ALL">("1Y");
   const [chartType, setChartType] = useState<"line" | "candle" | "area">("line");
+  const [baseAmount, setBaseAmount] = useState<number>(DEFAULT_AMOUNT);
+  const [trendData, setTrendData] = useState<any>({});
+  const [volumeData, setVolumeData] = useState<any[]>([]);
+  const [keyStats, setKeyStats] = useState<any[]>([]);
+  
+  const location = useLocation();
+  
+  // Parse amount from URL query parameter
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const amountParam = queryParams.get('amount');
+    
+    if (amountParam) {
+      const parsedAmount = parseFloat(amountParam);
+      if (!isNaN(parsedAmount) && parsedAmount > 0) {
+        setBaseAmount(parsedAmount);
+      }
+    }
+  }, [location.search]);
+  
+  // Generate data based on the amount
+  useEffect(() => {
+    setTrendData(generateTrendData(baseAmount));
+    setVolumeData(generateVolumeData(baseAmount));
+    
+    // Update key statistics based on the amount
+    setKeyStats([
+      { name: "Market Cap", value: `₱${(baseAmount * 2000).toLocaleString(undefined, {maximumFractionDigits: 1})}` },
+      { name: "P/E Ratio", value: 22.5 },
+      { name: "Dividend Yield", value: "1.8%" },
+      { name: "52-Week High", value: `₱${Math.round(baseAmount * 1.04).toLocaleString()}` },
+      { name: "52-Week Low", value: `₱${Math.round(baseAmount * 0.82).toLocaleString()}` },
+      { name: "Beta", value: 1.12 }
+    ]);
+  }, [baseAmount]);
   
   // Calculate if trend is positive (current value > first value)
-  const currentTrendData = trendData[timeframe];
-  const firstValue = timeframe === "1Y" 
-    ? currentTrendData[0].price 
-    : currentTrendData[0].value;
-  const lastValue = timeframe === "1Y" 
-    ? currentTrendData[currentTrendData.length - 1].price 
-    : currentTrendData[currentTrendData.length - 1].value;
+  const currentTrendData = trendData[timeframe] || [];
+  const firstValue = timeframe === "1Y" && currentTrendData.length > 0
+    ? currentTrendData[0]?.price 
+    : currentTrendData[0]?.value;
+  const lastValue = timeframe === "1Y" && currentTrendData.length > 0
+    ? currentTrendData[currentTrendData.length - 1]?.price 
+    : currentTrendData[currentTrendData.length - 1]?.value;
   
   const trendDirection = lastValue > firstValue ? "positive" : "negative";
-  const percentageChange = (((lastValue - firstValue) / firstValue) * 100).toFixed(2);
+  const percentageChange = firstValue && lastValue 
+    ? (((lastValue - firstValue) / firstValue) * 100).toFixed(2) 
+    : "0.00";
   
   return (
     <div className="container mx-auto p-6">
       <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-finance-primary">Market Trend Analysis (PHP)</h2>
+          <h2 className="text-2xl font-bold text-finance-primary">
+            Market Trend Analysis (₱{baseAmount.toLocaleString(undefined, {maximumFractionDigits: 2})})
+          </h2>
           <div className="h-10 w-10 bg-blue-50 rounded-full flex items-center justify-center">
             <PhilippinePeso className="h-5 w-5 text-finance-accent" />
           </div>
         </div>
         
         <p className="text-gray-600 mb-6">
-          Advanced trend analysis tools to help you make informed investment decisions.
-          Visualize market trends, analyze patterns, and identify potential opportunities in Philippine Pesos (₱).
+          Advanced trend analysis based on your input amount of ₱{baseAmount.toLocaleString(undefined, {maximumFractionDigits: 2})}.
+          This visualization shows projected market trends, patterns, and potential opportunities.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -166,7 +203,7 @@ const TrendAnalysis = () => {
                   className="h-full"
                 >
                   <LineChart
-                    data={trendData[timeframe]}
+                    data={trendData[timeframe] || []}
                     margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
@@ -240,8 +277,8 @@ const TrendAnalysis = () => {
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="date" />
-                      <YAxis tickFormatter={(value) => `₱${value}`} />
-                      <Tooltip formatter={(value) => [`₱${value.toLocaleString()}`, 'Volume']} />
+                      <YAxis tickFormatter={(value) => `₱${Math.round(value)}`} />
+                      <Tooltip formatter={(value) => [`₱${Math.round(Number(value)).toLocaleString()}`, 'Volume']} />
                       <Bar dataKey="volume" fill="#8b5cf6" />
                     </RechartsBarChart>
                   </ResponsiveContainer>
